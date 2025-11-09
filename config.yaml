@@ -1,0 +1,16 @@
+credentials:
+  usernames:
+    nowadays:
+      name: Nowadays Studio
+      password: "$1234"  # agregué $ para forzar string
+    botanerolimon:
+      name: Botanero Limon
+      password: abcd
+    nue:
+      name: Nue Lingerie
+      password: "$5678"  # agregué $ para forzar string
+
+cookie:
+  name: nowadays_cookie
+  key: abc123
+  expiry_days: 1

@@ -1,17 +1,17 @@
 import streamlit as st
 import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
 
-config = {
-    "credentials": {
-        "usernames": {
-            "nowadays": {"name": "Nowadays Studio", "password": "1234"},
-            "botanerolimon": {"name": "Botanero Limón", "password": "abcd"},
-            "nue": {"name": "Nue Lengiere", "password": "5678"},
-        }
-    },
-    "cookie": {"name": "nowadays_cookie", "key": "abc123", "expiry_days": 1},
-}
+# --- Cargar configuración ---
+@st.cache_resource
+def load_config():
+    with open("config.yaml") as file:
+        return yaml.load(file, Loader=SafeLoader)
 
+config = load_config()
+
+# --- Autenticación ---
 authenticator = stauth.Authenticate(
     config["credentials"],
     config["cookie"]["name"],
@@ -21,10 +21,26 @@ authenticator = stauth.Authenticate(
 
 authenticator.login(location="main")
 
+# --- Interfaz principal ---
 if st.session_state["authentication_status"]:
     authenticator.logout("Salir", location="sidebar")
     st.sidebar.success(f"Bienvenido, {st.session_state['name']}")
-    st.write(f"Dashboard privado de {st.session_state['name']}")
+
+    username = st.session_state["username"]
+
+    # --- Mostrar dashboard correspondiente ---
+    if username == "botanerolimon":
+        import clientes.botanero_limon as dashboard
+        dashboard.show()
+    elif username == "nowadays":
+        import clientes.nowadays_studio as dashboard
+        dashboard.show()
+    elif username == "nue":
+        import clientes.nue_lingerie as dashboard
+        dashboard.show()
+    else:
+        st.warning("Usuario sin dashboard asignado.")
+
 elif st.session_state["authentication_status"] is False:
     st.error("Usuario o contraseña incorrectos")
 elif st.session_state["authentication_status"] is None:
