@@ -66,17 +66,30 @@ def show():
     st.subheader("Proyección de ingresos mensuales por escenario")
     chart = (
         alt.Chart(df)
-        .mark_line(point=True, strokeWidth=3)
+        .mark_line(strokeWidth=2)
         .encode(
-            x=alt.X("Mes:N", sort=None, title="Mes", axis=alt.Axis(labelAngle=0, labelFontSize=14)),
-            y=alt.Y("Ingresos:Q", title="MXN", axis=alt.Axis(labelFontSize=14)),
-            color=alt.Color("Escenario:N",
-                            scale=alt.Scale(domain=list(colores.keys()),
-                                            range=list(colores.values())),
-                            legend=alt.Legend(title="Escenario")),
+            x=alt.X(
+                "Mes:N",
+                sort=None,
+                title="Mes",
+                axis=alt.Axis(labelAngle=45, labelFontSize=10, titleFontSize=12)
+            ),
+            y=alt.Y(
+                "Ingresos:Q",
+                title="MXN",
+                axis=alt.Axis(labelFontSize=10, titleFontSize=12)
+            ),
+            color=alt.Color(
+                "Escenario:N",
+                scale=alt.Scale(
+                    domain=list(colores.keys()),
+                    range=list(colores.values())
+                ),
+                legend=alt.Legend(title="Escenario", labelFontSize=10, titleFontSize=12)
+            ),
             tooltip=["Mes", "Escenario", "Ingresos"]
         )
-        .properties(height=450, width=850)
+        .properties(height=300)
     )
 
     st.altair_chart(chart, use_container_width=True)
