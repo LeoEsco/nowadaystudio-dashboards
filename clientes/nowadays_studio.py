@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
+import plotly.express as px
 
 def show():
     st.title("Dashboard - Nowadays Studio")
@@ -24,22 +24,26 @@ def show():
 
     real = [1000]*12
 
-    nue = [1000]*6 + [1000, 1000, 1000, 1000, 4000, 1000]
-    nue[6] = 4000      # noviembre ingreso de 3k
+    nue = [1000]*12
+    nue[6] = 4000       # noviembre: ingreso pendiente
     for i in range(8, 12):
-        nue[i] = 2500  # mantenimiento desde enero
+        nue[i] = 2500   # mantenimiento desde enero
 
-    mullix = [1000]*6 + [1000, 1000, 1000, 1000, 6000, 1000]
+    mullix = [1000]*12
     mullix[6] = 6000
     for i in range(8, 12):
         mullix[i] = 2000
 
-    pangas = [1000]*6 + [1000, 1000, 1000, 1000, 21000, 1000]
+    pangas = [1000]*12
     pangas[6] = 21000
     for i in range(8, 12):
         pangas[i] = 16000
 
-    todo = [1000]*6 + [28000, 1000, 18500, 18500, 18500, 18500]  # inyección en nov, baja dic, mantenimiento desde ene
+    todo = [1000]*12
+    todo[6] = 28000     # noviembre: cobro total
+    todo[7] = 1000      # diciembre: solo Botanero
+    for i in range(8, 12):
+        todo[i] = 18500 # mantenimiento desde enero
 
     df = pd.DataFrame({
         "Mes": list(meses)*5,
@@ -53,7 +57,7 @@ def show():
         "Ingresos": real + nue + mullix + pangas + todo
     })
 
-    # --- COLORES (ajustados para fondo oscuro) ---
+    # --- COLORES ---
     colores = {
         "Real": "#6a5acd",
         "+ Nue": "#ff6b6b",
@@ -62,37 +66,33 @@ def show():
         "Todo cerrado": "#ff9ff3"
     }
 
-    # --- GRÁFICA ---
+    # --- GRÁFICA (Plotly, responsiva) ---
     st.subheader("Proyección de ingresos mensuales por escenario")
-    chart = (
-        alt.Chart(df)
-        .mark_line(strokeWidth=2)
-        .encode(
-            x=alt.X(
-                "Mes:N",
-                sort=None,
-                title="Mes",
-                axis=alt.Axis(labelAngle=45, labelFontSize=10, titleFontSize=12)
-            ),
-            y=alt.Y(
-                "Ingresos:Q",
-                title="MXN",
-                axis=alt.Axis(labelFontSize=10, titleFontSize=12)
-            ),
-            color=alt.Color(
-                "Escenario:N",
-                scale=alt.Scale(
-                    domain=list(colores.keys()),
-                    range=list(colores.values())
-                ),
-                legend=alt.Legend(title="Escenario", labelFontSize=10, titleFontSize=12)
-            ),
-            tooltip=["Mes", "Escenario", "Ingresos"]
-        )
-        .properties(height=300)
+
+    fig = px.line(
+        df,
+        x="Mes",
+        y="Ingresos",
+        color="Escenario",
+        color_discrete_map=colores,
+        markers=True,
+        title="Proyección de ingresos mensuales"
     )
 
-    st.altair_chart(chart, use_container_width=True)
+    fig.update_layout(
+        template="plotly_dark",
+        title_font_size=18,
+        legend_title_text="Escenario",
+        legend_font_size=12,
+        height=400,
+        margin=dict(l=20, r=20, t=50, b=20),
+        hovermode="x unified"
+    )
+
+    fig.update_xaxes(tickangle=45, tickfont=dict(size=10))
+    fig.update_yaxes(title="MXN", tickfont=dict(size=10))
+
+    st.plotly_chart(fig, use_container_width=True)
 
     # --- NOTAS EXPLICATIVAS ---
     st.markdown("""
@@ -101,5 +101,9 @@ def show():
     - **Rojo coral:** Cierre de *Nue Lingerie* en noviembre (mantenimiento desde enero).  
     - **Turquesa:** Cierre de *Mullix* en noviembre (mantenimiento desde enero).  
     - **Amarillo cálido:** Cierre de *Pangas* en noviembre (mantenimiento desde enero).  
-    - **Rosa neón:** Escenario general: todos los proyectos cerrados en noviembre, mantenimientos activos desde enero 2026.
+    - **Rosa neón:** Todos los proyectos cerrados en noviembre; mantenimientos activos desde enero 2026.
     """)
+
+# Para ejecutar directamente (si no usas multipage)
+if __name__ == "__main__":
+    show()
